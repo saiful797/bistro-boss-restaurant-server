@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 require('dotenv').config();
 const cors = require("cors");
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 8000;
 
 //middleware
@@ -49,6 +50,26 @@ async function run() {
         res.send(result);
     })
 
+    // set user role
+    app.patch('/users/admin/:id', async(req, res) => {
+        const filter = {_id: new ObjectId (req.params.id)}
+        const updatedDoc = {
+            $set:{
+                role: 'admin'
+            }
+        }
+
+        const result = await userCollection.updateOne(filter, updatedDoc);
+        res.send(result);
+    })
+
+    app.delete('/users/:id', async(req, res) => {
+        const query = {_id: new ObjectId (req.params.id)};
+        const result = await userCollection.deleteOne(query);
+        res.send(result);
+    })
+
+    // menu related api
     app.get('/menu', async(req, res) => {
         const result = await menuCollection.find().toArray();
         res.send(result);
