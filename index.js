@@ -37,7 +37,7 @@ async function run() {
     //jwt related API
     app.post('/jwt', async (req, res) => {
         const user = req.body;
-        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '7d'});
         res.send({ token })
     })
 
@@ -133,10 +133,35 @@ async function run() {
         res.send(result);
     });
 
+    app.patch('/menu/:id', async ( req, res ) => {
+        const item = req.body;
+        const id = req.params.id;
+        const filter = {_id: new ObjectId (id)};
+        const updatedDoc = {
+            $set: {
+                ...item,
+            }
+        }
+        const result = await menuCollection.updateOne( filter, updatedDoc );
+        res.send(result);
+    })
+
+    app.delete('/menu/:id', verifyToken, verifyAdmin, async(req, res) => {
+        const query = {_id: new ObjectId (req.params.id)};
+        const result = await menuCollection.deleteOne(query);
+        res.send(result);
+    })
+
     app.get('/menu', async(req, res) => {
         const result = await menuCollection.find().toArray();
         res.send(result);
     });
+
+    app.get('/menu/:id', async (req, res) => {
+        const result = await menuCollection.findOne({_id: new ObjectId (req.params.id)});
+
+        res.send(result);
+    })
 
     app.get('/reviews', async(req, res) => {
         const result = await reviewCollection.find().toArray();
